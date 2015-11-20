@@ -20,13 +20,13 @@ from rest_framework import routers
 from userprofile import views
 
 # router = routers.DefaultRouter()
-# router.register(r'api/users', views.UserViewSet)
+# router.register(r'api/userprofile', views.UserProfileViewSet)
 admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    # url(r'^userprofile/', include('userprofile.urls', namespace="userprofile")),
-
+    url(r'^userprofile/', include('userprofile.urls')),
+    url(r'^account/', include('api.urls'))
 
     # url(r'^polls/', include('polls.urls', namespace="polls")),
     # url(r'^', include(router.urls)),

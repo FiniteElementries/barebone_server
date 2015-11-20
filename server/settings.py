@@ -38,6 +38,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'userprofile',
+    'api',
+    'guardian',
 )
 
 
@@ -93,7 +95,11 @@ DATABASES = {
     }
 }
 
-
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # default
+    'guardian.backends.ObjectPermissionBackend',
+)
+ANONYMOUS_USER_ID = -1
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
