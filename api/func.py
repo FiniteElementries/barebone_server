@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login
 from guardian.models import UserObjectPermission
+from rest_framework.authtoken.models import Token
 
 from userprofile.models import UserProfile
 import sys
@@ -17,11 +18,54 @@ def error_response(error, response=None):
     # return json.dumps(response)
     return HttpResponse(json.dumps(response))
 
+def verify_token(username, token):
+    """
+
+    :param username:
+    :param token:
+    :return: true or false
+    """
+    try:
+        user=User.objects.get(username=username)
+    except User.DoesNotExist:
+        return False
+
+    try:
+        exist_token = Token.objects.get(user=user)
+    except Token.DoesNotExist:
+        return False
+
+    if token != exist_token.key:
+        return False
+    return True
+
+def reset_token(username, token):
+    """
+
+    :param username:
+    :param token:
+    :return: true or false
+    """
+    try:
+        user=User.objects.get(username=username)
+    except User.DoesNotExist:
+        return False
+
+    try:
+        exist_token = Token.objects.get(user=user)
+    except Token.DoesNotExist:
+        return False
+
+    exist_token.delete()
+    Token.objects.create(user=user)
+
+    return True
 
 @csrf_exempt
 def create_account(request):
     """
-    :param request: json format '{"username": "username_value",
+    :param request: POST method
+                        json format '{"username": "username_value",
                                     "email":"email_value" ,
                                     "password": "password_value,}'
     :return:new UserProfile object
@@ -46,7 +90,7 @@ def create_account(request):
         new_user = User.objects.create_user(username=username,
                                             email=email,
                                             password=password)
-
+        token=Token.objects.create(user=new_user)
         new_user_profile = UserProfile(user = new_user)
         new_user_profile.save()
 
@@ -54,6 +98,8 @@ def create_account(request):
 
         response['success']=True
         response['message']="success"
+        response['token']=token.key
+
     except ValueError:
         print("Value error")
         pass
@@ -63,10 +109,15 @@ def create_account(request):
 
 @csrf_exempt
 def account_login(request):
+    """
+
+    :param request: GET method
+    :return:
+    """
     response=dict()
 
-    username= request.GET['username']
-    password= request.GET['password']
+    username = request.GET['username']
+    password = request.GET['password']
 
     user=authenticate(username=username, password=password)
 
@@ -77,9 +128,12 @@ def account_login(request):
     if user is not None:
         print "user authenticated"
         if user.is_active:
-            login(request, user)
+            # login(request, user)
             response['success']=True
             response['message']="sucess"
+            token = Token.objects.get(user=user)
+            response['token']=token.key
+
         else:
             # Return a 'disabled account' error message
             response['message']="disabled account"
@@ -89,5 +143,29 @@ def account_login(request):
         print "invalid login"
         response['message']="invalid login"
 
+
+    return HttpResponse(json.dumps(response))
+
+@csrf_exempt
+def account_logout(request):
+    """
+    log user out, reset access token
+    :param request: POST method
+    :return:
+    """
+    response=dict()
+    response['success']=False
+
+    username=request.POST['username']
+    token=request.POST['token']
+
+    verified=verify_token(username,token)
+
+    if not verified:
+        error_response("invalid username or token")
+    else:
+        try_reset_token=reset_token(username,token)
+        if try_reset_token:
+            response['success']=True
 
     return HttpResponse(json.dumps(response))

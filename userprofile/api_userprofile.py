@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 import json
+from rest_framework.authtoken.models import Token
 
 from userprofile.models import UserProfile
 import api.func
@@ -39,36 +40,40 @@ def get_userprofile_generic(request):
     return HttpResponse(json.dumps(response))
 
 
-# @login_required
+@csrf_exempt
 def get_userprofile_all(request):
+    """
+
+    :param request: GET method
+    :return:
+    """
 
     response=dict()
     response['success'] = False
 
     username = request.GET['username']
+    token = request.GET['token']
+    target_username = request.GET['target_username']
 
-    user=request.user
+    verified=api.func.verify_token(username,token)
 
-    print user
+    if not verified:
+        return api.func.error_response("Invalid username or token")
 
-    if not user.is_authenticated():
-        return api.func.error_response("Login is required")
-
+    # try to get userprofile
     try:
-        user_profile=UserProfile.get_userprofile_by_username(username)
+        target_userprofile=UserProfile.objects.get(user__username=target_username)
     except UserProfile.DoesNotExist:
-        return api.func.error_response("Invalid username")
+        return api.func.error_response("Invalid target username")
 
-
-    if not user.has_perm('full_access', user_profile):
-        return api.func.error_response("Permission denied")
+    # check for permission
+    user=User.objects.get(username=username)
+    if not user.has_perm('full_access', target_userprofile):
+         return api.func.error_response("Permission denied")
 
     response['success'] = True
+    response['message'] = "success"
 
     return HttpResponse(json.dumps(response))
 
-@login_required
-def getMyDetails(request):
-    response=dict()
 
-    return  HttpResponse(json.dumps(response))
