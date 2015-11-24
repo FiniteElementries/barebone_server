@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 
 from userprofile.models import UserProfile
 import api.func
+from api.func import server_auth, check_friendship
 
 
 
@@ -39,11 +40,11 @@ def get_userprofile_generic(request):
 
     return HttpResponse(json.dumps(response))
 
-
 @csrf_exempt
-def get_userprofile_all(request):
+@server_auth
+@check_friendship
+def get_userprofile_detail(request):
     """
-
     :param request: GET method
     :return:
     """
@@ -51,28 +52,22 @@ def get_userprofile_all(request):
     response=dict()
     response['success'] = False
 
-    username = request.GET['username']
-    token = request.GET['token']
-    target_username = request.GET['target_username']
+    user=request.user
+    target_userprofile=request.target_userprofile
 
-    verified=api.func.verify_token(username,token)
+    perm=request.perm
 
-    if not verified:
-        return api.func.error_response("Invalid username or token")
+    response['message']=perm
+    response['success']=True
 
-    # try to get userprofile
-    try:
-        target_userprofile=UserProfile.objects.get(user__username=target_username)
-    except UserProfile.DoesNotExist:
-        return api.func.error_response("Invalid target username")
-
-    # check for permission
-    user=User.objects.get(username=username)
-    if not user.has_perm('full_access', target_userprofile):
-         return api.func.error_response("Permission denied")
-
-    response['success'] = True
-    response['message'] = "success"
+    if user.has_perm('full_access', target_userprofile):
+        request.perm='full_access' # todo implement access full_access
+    elif user.has_perm('friend', target_userprofile):
+        request.perm='friend' # todo implement access friend
+    elif user.has_perm('blocked', target_userprofile):
+        request.perm='blocked' # todo implement access blocked
+    else:
+        request.perm='stranger' # todo implement access stranger
 
     return HttpResponse(json.dumps(response))
 

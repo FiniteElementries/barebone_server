@@ -9,27 +9,94 @@ from rest_framework.authtoken.models import Token
 from userprofile.models import UserProfile
 import sys
 
+
+# todo friendship check decorator
+def check_friendship(original_function):
+    def wrapper(request):
+        try:
+            username = request.GET['username']
+            token = request.GET['token']
+            target_username=request.GET['target_username']
+        except:
+            username = request.POST['username']
+            token = request.POST['token']
+            target_username=request.POST['target_username']
+
+        user = request.user
+        target_user = User.objects.get(username=target_username)
+        target_userprofile = UserProfile.objects.get(user=target_user)
+        request.target_userprofile=target_userprofile
+
+        if user.has_perm('full_access', target_userprofile):
+            request.perm='full_access'
+        elif user.has_perm('friend', target_userprofile):
+            request.perm='friend'
+        elif user.has_perm('blocked', target_userprofile):
+            request.perm='blocked'
+        else:
+            request.perm='stranger'
+
+        return original_function(request)
+    return wrapper
+
+
+
+
+
+def server_auth(original_function):
+    """
+    server access authentication
+    request should include username and access token
+    attaches user object to request if successful
+    :param original_function:
+    :return:
+    """
+    def wrapper(request):
+        username=""
+        token=""
+
+        try:
+            username = request.GET['username']
+            token = request.GET['token']
+        except:
+            username = request.POST['username']
+            token = request.POST['token']
+
+        authorized = verify_token(username=username, token=token)
+
+        if authorized:
+            user=User.objects.get(username=username)
+            request.user=user
+            return original_function(request)
+        else:
+            return error_response("Authentication error.")
+    return wrapper
+
+
 def error_response(error, response=None):
     if not response:
         response = dict()
 
     response['message'] = error
     response['success'] = False
-    # return json.dumps(response)
+
     return HttpResponse(json.dumps(response))
+
 
 def verify_token(username, token):
     """
-
-    :param username:
-    :param token:
+    :param username: string
+    :param token: string
     :return: true or false
     """
+
+    # check user account existance
     try:
         user=User.objects.get(username=username)
     except User.DoesNotExist:
         return False
 
+    # check token
     try:
         exist_token = Token.objects.get(user=user)
     except Token.DoesNotExist:
@@ -39,27 +106,6 @@ def verify_token(username, token):
         return False
     return True
 
-def reset_token(username, token):
-    """
-
-    :param username:
-    :param token:
-    :return: true or false
-    """
-    try:
-        user=User.objects.get(username=username)
-    except User.DoesNotExist:
-        return False
-
-    try:
-        exist_token = Token.objects.get(user=user)
-    except Token.DoesNotExist:
-        return False
-
-    exist_token.delete()
-    Token.objects.create(user=user)
-
-    return True
 
 @csrf_exempt
 def create_account(request):
@@ -146,7 +192,9 @@ def account_login(request):
 
     return HttpResponse(json.dumps(response))
 
+
 @csrf_exempt
+@server_auth
 def account_logout(request):
     """
     log user out, reset access token
@@ -156,16 +204,16 @@ def account_logout(request):
     response=dict()
     response['success']=False
 
-    username=request.POST['username']
-    token=request.POST['token']
+    user=request.user
 
-    verified=verify_token(username,token)
+    try:
+        exist_token = Token.objects.get(user=user)
+    except Token.DoesNotExist:
+        return error_response("server error")
 
-    if not verified:
-        error_response("invalid username or token")
-    else:
-        try_reset_token=reset_token(username,token)
-        if try_reset_token:
-            response['success']=True
+    exist_token.delete()
+    Token.objects.create(user=user)
+
+    response['success']=True
 
     return HttpResponse(json.dumps(response))
