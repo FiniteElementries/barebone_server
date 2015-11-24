@@ -7,8 +7,8 @@ import json
 from rest_framework.authtoken.models import Token
 
 from userprofile.models import UserProfile
-import api.func
-from api.func import server_auth, check_friendship
+import account.func
+from account.func import server_auth, check_friendship
 
 
 
@@ -25,12 +25,12 @@ def get_userprofile_generic(request):
     username = request.GET['username']
 
     if username is None:
-        return api.func.error_response("Need to provide username")
+        return account.func.error_response("Need to provide username")
 
     try:
         user_profile=UserProfile.get_userprofile_by_username(username)
     except UserProfile.DoesNotExist:
-        return api.func.error_response("Invalid username")
+        return account.func.error_response("Invalid username")
 
     response['first_name']=user_profile.user.first_name
     response['last_name']=user_profile.user.last_name

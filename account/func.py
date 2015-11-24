@@ -10,8 +10,15 @@ from userprofile.models import UserProfile
 import sys
 
 
-# todo friendship check decorator
 def check_friendship(original_function):
+    """
+    friendship check
+    attaches:
+        target_userprofile to request
+        perm to request
+    :param original_function:
+    :return:
+    """
     def wrapper(request):
         try:
             username = request.GET['username']
@@ -22,7 +29,11 @@ def check_friendship(original_function):
             token = request.POST['token']
             target_username=request.POST['target_username']
 
-        user = request.user
+        try:
+            user = request.user
+        except:
+            error_response("Authentication required")
+
         target_user = User.objects.get(username=target_username)
         target_userprofile = UserProfile.objects.get(user=target_user)
         request.target_userprofile=target_userprofile
