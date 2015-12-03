@@ -39,7 +39,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'userprofile',
     'account',
-    'guardian',
     'rest_framework.authtoken',
 )
 
@@ -98,7 +97,6 @@ DATABASES = {
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend', # default
-    'guardian.backends.ObjectPermissionBackend',
 )
 ANONYMOUS_USER_ID = -1
 

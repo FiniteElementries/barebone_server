@@ -2,56 +2,11 @@ import json
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login
-from guardian.models import UserObjectPermission
+from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 
 from userprofile.models import UserProfile
 import sys
-
-
-def check_friendship(original_function):
-    """
-    friendship check
-    attaches:
-        target_userprofile to request
-        perm to request
-    :param original_function:
-    :return:
-    """
-    def wrapper(request):
-        try:
-            username = request.GET['username']
-            token = request.GET['token']
-            target_username=request.GET['target_username']
-        except:
-            username = request.POST['username']
-            token = request.POST['token']
-            target_username=request.POST['target_username']
-
-        try:
-            user = request.user
-        except:
-            error_response("Authentication required")
-
-        target_user = User.objects.get(username=target_username)
-        target_userprofile = UserProfile.objects.get(user=target_user)
-        request.target_userprofile=target_userprofile
-
-        if user.has_perm('full_access', target_userprofile):
-            request.perm='full_access'
-        elif user.has_perm('friend', target_userprofile):
-            request.perm='friend'
-        elif user.has_perm('blocked', target_userprofile):
-            request.perm='blocked'
-        else:
-            request.perm='stranger'
-
-        return original_function(request)
-    return wrapper
-
-
-
 
 
 def server_auth(original_function):
@@ -73,6 +28,9 @@ def server_auth(original_function):
             username = request.POST['username']
             token = request.POST['token']
 
+        if not (username and token):
+            return error_response("Please provide username and access token for authentication")
+
         authorized = verify_token(username=username, token=token)
 
         if authorized:
@@ -80,7 +38,7 @@ def server_auth(original_function):
             request.user=user
             return original_function(request)
         else:
-            return error_response("Authentication error.")
+            return error_response("Authentication error")
     return wrapper
 
 
@@ -136,13 +94,10 @@ def create_account(request):
         email= request.POST['email']
 
         if User.objects.filter(username=username).exists():
-            print "username exists."
-            response['message']="username exists"
-            raise ValueError
+            return error_response("username exists")
+
         if User.objects.filter(email=email).exists():
-            print "email exists."
-            response['message']="email exists"
-            raise ValueError
+            return error_response("email exists")
 
         new_user = User.objects.create_user(username=username,
                                             email=email,
@@ -151,15 +106,12 @@ def create_account(request):
         new_user_profile = UserProfile(user = new_user)
         new_user_profile.save()
 
-        UserObjectPermission.objects.assign_perm('full_access', user=new_user, obj = new_user_profile)
-
         response['success']=True
         response['message']="success"
         response['token']=token.key
 
     except ValueError:
-        print("Value error")
-        pass
+        return error_response("Please provide username, password and email")
 
     return HttpResponse(json.dumps(response))
 
@@ -173,8 +125,8 @@ def account_login(request):
     """
     response=dict()
 
-    username = request.GET['username']
-    password = request.GET['password']
+    username = request.POST['username']
+    password = request.POST['password']
 
     user=authenticate(username=username, password=password)
 
@@ -183,9 +135,7 @@ def account_login(request):
     response['success']=False
 
     if user is not None:
-        print "user authenticated"
         if user.is_active:
-            # login(request, user)
             response['success']=True
             response['message']="sucess"
             token = Token.objects.get(user=user)
@@ -197,7 +147,6 @@ def account_login(request):
 
     else:
         # Return an 'invalid login' error message.
-        print "invalid login"
         response['message']="invalid login"
 
 
@@ -226,5 +175,35 @@ def account_logout(request):
     Token.objects.create(user=user)
 
     response['success']=True
+    response['message']="success"
 
     return HttpResponse(json.dumps(response))
+
+
+@csrf_exempt
+@server_auth
+def change_password(request):
+    """
+    change user account password
+    :param request:
+    :return:
+    """
+
+    new_password=request.POST['new_password']
+    old_password=request.POST['old_password']
+    username=request.POST['username']
+    response=dict()
+
+    user=authenticate(username=username, password=old_password)
+    token_user=request.user
+
+    if not user:
+        print "auth error"
+        return error_response("Invalid username or old password")
+    else:
+        user.set_password(new_password)
+        user.save()
+        response['success']=True
+        response['message']="success"
+
+        return HttpResponse(json.dumps(response))

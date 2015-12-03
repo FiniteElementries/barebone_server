@@ -16,11 +16,6 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
-from rest_framework import routers
-from userprofile import views
-
-# router = routers.DefaultRouter()
-# router.register(r'account/userprofile', views.UserProfileViewSet)
 admin.autodiscover()
 
 urlpatterns = [
