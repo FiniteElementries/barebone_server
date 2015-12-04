@@ -9,33 +9,6 @@ import account.func
 from account.func import server_auth
 
 #todo merger get generic and detail together, filter based on permission level
-
-@csrf_exempt
-@server_auth
-def get_userprofile_generic(request):
-    """
-
-    :param request: json format: {"userid", integer_value}
-    :return: user details in json
-    """
-    response=dict()
-    response['success'] = False
-
-    user=request.user
-
-    try:
-        user_profile=UserProfile.objects.get(user=user)
-    except UserProfile.DoesNotExist:
-        return account.func.error_response("Server error")
-
-    response['first_name']=user_profile.user.first_name
-    response['last_name']=user_profile.user.last_name
-    response['about_me']=user_profile.about_me
-    response['success'] = True
-    response['message'] = "success"
-
-    return HttpResponse(json.dumps(response))
-
 @csrf_exempt
 @server_auth
 def get_userprofile_detail(request):
@@ -50,7 +23,6 @@ def get_userprofile_detail(request):
     user=request.user
     my_profile=UserProfile.objects.get(user=user)
 
-
     try:
         target_username=request.POST['target_username']
     except KeyError:
@@ -61,27 +33,18 @@ def get_userprofile_detail(request):
     except UserProfile.DoesNotExist:
         account.func.error_response("target_username does not exist")
 
-    print my_profile,target_userprofile
-    print my_profile in target_userprofile.follower.all()
-    if my_profile==target_userprofile:
-        print "return full access"  # todo implement access full_access
-        response['message']="full_access"
-    elif my_profile in target_userprofile.follower.all():
-        print "return follower access"  # todo implement access foloower
-        response['message']="follower"
-    elif my_profile in target_userprofile.blocked.all():
-        print "return block access"
-        response['message']="block" # todo implement access blocked
-    else:
-        print "stranger access"
-        response['message']="stranger"  # todo implement access stranger
+    package=target_userprofile.get_userprofile_info(my_profile)
 
     response['success']=True
+    response['message']="success"
+    response['package']=dict()
+
+    for key, value in package.iteritems():
+        response['package'][key]=value
 
     return HttpResponse(json.dumps(response))
 
 
-# todo check if this works
 @csrf_exempt
 @server_auth
 def friend_action(request):
@@ -127,7 +90,6 @@ def friend_action(request):
     return HttpResponse(json.dumps(response))
 
 
-# todo check if this works
 @csrf_exempt
 @server_auth
 def get_friend_list(request):
