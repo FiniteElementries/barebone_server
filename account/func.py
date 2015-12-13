@@ -9,6 +9,12 @@ from userprofile.models import UserProfile
 import sys
 
 
+# todo add profile picture in UserProfile model
+# todo discuss with Sally whether get yelp data directly from mobile: decision: get yelp data from server directly, rational: keep functional logic on server, expanding to andriod will be easy
+# todo setup account deactivation/deletion
+# todo setup email to reset password
+# todo timeout login
+
 def server_auth(original_function):
     """
     server access authentication

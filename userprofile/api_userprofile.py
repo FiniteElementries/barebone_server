@@ -8,7 +8,7 @@ from userprofile.models import UserProfile
 import account.func
 from account.func import server_auth
 
-#todo merger get generic and detail together, filter based on permission level
+
 @csrf_exempt
 @server_auth
 def get_userprofile_detail(request):
@@ -21,7 +21,7 @@ def get_userprofile_detail(request):
     response['success'] = False
 
     user=request.user
-    my_profile=UserProfile.objects.get(user=user)
+    my_profile=user.profile
 
     try:
         target_username=request.POST['target_username']
@@ -69,20 +69,16 @@ def friend_action(request):
 
     response=dict()
 
-    try:
-        myprofile=UserProfile.objects.get(user=user)
-    except UserProfile.DoesNotExist:
-        return account.func.error_response("server internal error")
 
     if action=="follow":
-        myprofile.rs_follow(target_userprofile)
+        user.profile.rs_follow(target_userprofile)
         # todo send friend request notification
 
     elif action=="block":
-        myprofile.rs_block(target_userprofile)
+        user.profile.rs_block(target_userprofile)
 
     elif action=="unfollow" or action=="unblock":
-        myprofile.rs_reset(target_userprofile)
+        user.profile.rs_reset(target_userprofile)
 
     response['success']=True
     response['message']="success"
@@ -99,9 +95,8 @@ def get_friend_list(request):
     :return: list of friend usernames
     """
     user=request.user
-    profile=UserProfile.objects.get(user=user)
 
-    friend_list = profile.get_follower()
+    friend_list = user.profile.get_follower()
 
     package=",".join(friend_list)
 
