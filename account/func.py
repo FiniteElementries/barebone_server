@@ -6,80 +6,17 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 
 from userprofile.models import UserProfile
+from helper.http_handler import error_response
+from helper.auth import server_auth
 import sys
 
 
-# todo add profile picture in UserProfile model
+# todo test profile picture in UserProfile model
 # todo discuss with Sally whether get yelp data directly from mobile: decision: get yelp data from server directly, rational: keep functional logic on server, expanding to andriod will be easy
 # todo setup account deactivation/deletion
 # todo setup email to reset password
 # todo timeout login
-
-def server_auth(original_function):
-    """
-    server access authentication
-    request should include username and access token
-    attaches user object to request if successful
-    :param original_function:
-    :return:
-    """
-    def wrapper(request):
-        username=""
-        token=""
-
-        try:
-            username = request.GET['username']
-            token = request.GET['token']
-        except:
-            username = request.POST['username']
-            token = request.POST['token']
-
-        if not (username and token):
-            return error_response("Please provide username and access token for authentication")
-
-        authorized = verify_token(username=username, token=token)
-
-        if authorized:
-            user=User.objects.get(username=username)
-            request.user=user
-            return original_function(request)
-        else:
-            return error_response("Authentication error")
-    return wrapper
-
-
-def error_response(error, response=None):
-    if not response:
-        response = dict()
-
-    response['message'] = error
-    response['success'] = False
-
-    return HttpResponse(json.dumps(response))
-
-
-def verify_token(username, token):
-    """
-    :param username: string
-    :param token: string
-    :return: true or false
-    """
-
-    # check user account existance
-    try:
-        user=User.objects.get(username=username)
-    except User.DoesNotExist:
-        return False
-
-    # check token
-    try:
-        exist_token = Token.objects.get(user=user)
-    except Token.DoesNotExist:
-        return False
-
-    if token != exist_token.key:
-        return False
-    return True
+# todo setup api to change UserProfile info
 
 
 @csrf_exempt

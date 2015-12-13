@@ -6,7 +6,7 @@ import json
 
 from userprofile.models import UserProfile
 import account.func
-from account.func import server_auth
+from helper.auth import server_auth
 
 
 @csrf_exempt
@@ -68,7 +68,6 @@ def friend_action(request):
         return account.func.error_response("target username does not exist")
 
     response=dict()
-
 
     if action=="follow":
         user.profile.rs_follow(target_userprofile)
