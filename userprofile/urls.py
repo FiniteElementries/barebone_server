@@ -7,4 +7,5 @@ urlpatterns = patterns('',
                        url(r'^info', get_userprofile_detail),
                        url(r'^friends/list', get_friend_list),
                        url(r'^friends/change', friend_action),
+                       url(r'^change_info',change_userprofile_info),
                        )

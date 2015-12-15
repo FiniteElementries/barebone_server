@@ -13,10 +13,8 @@ import sys
 
 # todo test profile picture in UserProfile model
 # todo discuss with Sally whether get yelp data directly from mobile: decision: get yelp data from server directly, rational: keep functional logic on server, expanding to andriod will be easy
-# todo setup account deactivation/deletion
 # todo setup email to reset password
 # todo timeout login
-# todo setup api to change UserProfile info
 
 
 @csrf_exempt
@@ -150,3 +148,29 @@ def change_password(request):
         response['message']="success"
 
         return HttpResponse(json.dumps(response))
+
+# todo need to be tested
+@csrf_exempt
+@server_auth
+def delete_account(request):
+    """
+    delete user account and its related profile
+    :param request:
+    :return:
+    """
+
+    user=request.user
+    profile=user.profile
+
+    user.delete()
+
+    try:
+        profile.delete()
+    except:
+        pass
+
+    response=dict()
+    response['success']=True
+    response['message']="success"
+
+    return HttpResponse(json.dumps(response))

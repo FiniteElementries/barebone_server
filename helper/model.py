@@ -12,3 +12,30 @@ def to_dict(instance):
         else:
             data[f.name] = f.value_from_object(instance)
     return data
+
+
+def get_deep_attr(model, field):
+    """
+    this is a static moethod to get forigen keys or OneToOne fields in model fiends
+    similar to get_attr
+    :param model:
+    :param field: use __ for foreign key field, eg user__username
+    :return:
+    """
+
+    def get_repr(value):
+        if callable(value):
+            return '%s' % value()
+        return value
+
+    def get_field(instance, field):
+        field_path = field.split('__')
+        attr = instance
+        for elem in field_path:
+            try:
+                attr = getattr(attr, elem)
+            except AttributeError:
+                return None
+        return attr
+
+    return get_repr(get_field(model, field))

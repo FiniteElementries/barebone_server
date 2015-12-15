@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 import json
+import ast
 
 from userprofile.models import UserProfile
 import account.func
@@ -108,4 +109,21 @@ def get_friend_list(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
+@server_auth
+def change_userprofile_info(request):
+
+    profile=request.user.profile
+
+    package=request.POST['package']
+    package=ast.literal_eval(package)
+
+    for k, v in package.items():
+        profile.change_userprofile_info(k,v)
+
+    response=dict()
+    response['success']=True
+    response['message']="success"
+
+    return HttpResponse(json.dumps(response))
 
