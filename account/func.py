@@ -8,12 +8,12 @@ from rest_framework.authtoken.models import Token
 from userprofile.models import UserProfile
 from helper.http_handler import error_response
 from helper.auth import server_auth
+import datetime
 import sys
 
 
 # todo test profile picture in UserProfile model
-# todo discuss with Sally whether get yelp data directly from mobile: decision: get yelp data from server directly, rational: keep functional logic on server, expanding to andriod will be easy
-# todo timeout login
+# todo implement yelp access
 
 
 @csrf_exempt
@@ -78,7 +78,16 @@ def account_login(request):
         if user.is_active:
             response['success']=True
             response['message']="sucess"
-            token = Token.objects.get(user=user)
+
+            try:
+                exist_token = Token.objects.get(user=user)
+            except Token.DoesNotExist:
+                return error_response("server error")
+
+            exist_token.delete()
+            token=Token.objects.create(user=user)
+            token.created = datetime.datetime.utcnow()
+
             response['token']=token.key
 
         else:
@@ -106,13 +115,13 @@ def account_logout(request):
 
     user=request.user
 
-    try:
-        exist_token = Token.objects.get(user=user)
-    except Token.DoesNotExist:
-        return error_response("server error")
-
-    exist_token.delete()
-    Token.objects.create(user=user)
+    # try:
+    #     exist_token = Token.objects.get(user=user)
+    # except Token.DoesNotExist:
+    #     return error_response("server error")
+    #
+    # exist_token.delete()
+    # Token.objects.create(user=user)
 
     response['success']=True
     response['message']="success"

@@ -1,6 +1,6 @@
 import json
 from django.http import HttpResponse
-
+import json
 
 def error_response(error, response=None):
     if not response:
@@ -10,3 +10,8 @@ def error_response(error, response=None):
     response['success'] = False
 
     return HttpResponse(json.dumps(response))
+
+
+
+def loadJson(bytes):
+    return json.loads(bytes.decode('UTF-8'))

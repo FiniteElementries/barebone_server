@@ -17,7 +17,6 @@ def get_userprofile_detail(request):
     :param
     :return:
     """
-
     response=dict()
     response['success'] = False
 
