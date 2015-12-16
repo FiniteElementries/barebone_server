@@ -43,16 +43,6 @@ INSTALLED_APPS = (
 )
 
 
-# MIDDLEWARE_CLASSES = (
-#     'django.middleware.common.CommonMiddleware',
-#     'django.contrib.sessions.middleware.SessionMiddleware',
-#     'django.middleware.csrf.CsrfViewMiddleware',
-#     'django.contrib.auth.middleware.AuthenticationMiddleware',
-#     'django.contrib.messages.middleware.MessageMiddleware',
-#     # Uncomment the next line for simple clickjacking protection:
-#     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-# )
-
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -108,6 +98,15 @@ REST_FRAMEWORK = {
     )
 }
 
+# setup server email account
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'example@example.com'
+EMAIL_HOST_PASSWORD = 'p@ssword'
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/

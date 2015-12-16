@@ -15,15 +15,20 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 
 admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/userprofile/', include('userprofile.urls')),
-    url(r'^api/account/', include('account.urls'))
+    url(r'^api/account/', include('account.urls')),
 
-    # url(r'^polls/', include('polls.urls', namespace="polls")),
-    # url(r'^', include(router.urls)),
-    # url(r'^account-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # password resets todo add customized views
+    url(r'^password_reset_done$', 'django.contrib.auth.views.password_reset_done',
+        name='password_reset_done'),
+    url(r'^password_reset/$', 'django.contrib.auth.views.password_reset', name="reset_password"),
+    url(r'^reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>,+)/$',
+        'django.contrib.auth.views.password_reset_confirm'),
+    url(r'^password_reset_complete$', 'django.contrib.auth.views.password_reset_complete'),
 ]
