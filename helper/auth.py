@@ -13,9 +13,8 @@ def server_auth(original_function):
     :return:
     """
     def wrapper(request):
-        username=""
-        token=""
-
+        username=u""
+        token=u""
         try:
             username = request.GET['username']
             token = request.GET['token']
@@ -65,7 +64,7 @@ def verify_token(username, token):
     # check token expiry
     utc_now = datetime.datetime.utcnow()
     utc_now = utc_now.replace(tzinfo=pytz.utc)
-    if exist_token.created < utc_now - datetime.timedelta(minutes=15):
+    if exist_token.created < utc_now - datetime.timedelta(days=365):
         return -1
 
     return 1

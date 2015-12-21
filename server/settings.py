@@ -23,9 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '!f)v!xz%o6v$sz^eib#os0it+ss%t2ys*luf-^cem6jhc^-t^)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ["localhost", "127.0.0.1","0.0.0.0",'192.168.0.11']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -94,11 +95,22 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     )
 }
 
-# setup server email account
+# https setup # todo implement https connection
+# https://azure.microsoft.com/en-us/documentation/articles/web-sites-configure-ssl-certificat/#bkmk_getcert
+# https://azure.microsoft.com/en-us/documentation/articles/web-sites-configure-ssl-certificate/
+
+# SECURE_SSL_REDIRECT=True
+# SESSION_COOKIE_SECURE=True
+# CSRF_COOKIE_SECURE=True
+# SESSION_EXPIRE_AT_BROWSER_CLOSE=True
+# os.environ['HTTPS'] = "on"
+
+
+
+# setup server email account # todo email account
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
