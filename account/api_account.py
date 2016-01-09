@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 
 from userprofile.models import UserProfile
-from helper.http_handler import error_response
+from helper.http_handler import error_response, package_handle
 from helper.auth import server_auth
 import datetime
 import sys
@@ -53,7 +53,7 @@ def create_account(request):
     except ValueError:
         return error_response("Please provide username, password and email")
 
-    return HttpResponse(json.dumps(response))
+    return package_handle(response)
 
 
 @csrf_exempt
@@ -67,6 +67,8 @@ def account_login(request):
 
     username = request.POST['username']
     password = request.POST['password']
+
+
 
     user=authenticate(username=username, password=password)
 
@@ -99,7 +101,7 @@ def account_login(request):
         response['message']="invalid login"
 
 
-    return HttpResponse(json.dumps(response))
+    return package_handle(response)
 
 
 @csrf_exempt
@@ -115,18 +117,18 @@ def account_logout(request):
 
     user=request.user
 
-    # try:
-    #     exist_token = Token.objects.get(user=user)
-    # except Token.DoesNotExist:
-    #     return error_response("server error")
-    #
-    # exist_token.delete()
-    # Token.objects.create(user=user)
+    try:
+        exist_token = Token.objects.get(user=user)
+    except Token.DoesNotExist:
+        return error_response("server error")
+
+    exist_token.delete()
+    Token.objects.create(user=user)
 
     response['success']=True
     response['message']="success"
 
-    return HttpResponse(json.dumps(response))
+    return package_handle(response)
 
 
 @csrf_exempt
@@ -155,7 +157,7 @@ def change_password(request):
         response['success']=True
         response['message']="success"
 
-        return HttpResponse(json.dumps(response))
+        return package_handle(response)
 
 # todo need to be tested
 @csrf_exempt
@@ -181,4 +183,4 @@ def delete_account(request):
     response['success']=True
     response['message']="success"
 
-    return HttpResponse(json.dumps(response))
+    return package_handle(response)

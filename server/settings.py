@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '!f)v!xz%o6v$sz^eib#os0it+ss%t2ys*luf-^cem6jhc^-t^)'
+SECRET_KEY = '###############################'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'userprofile',
     'account',
     'rest_framework.authtoken',
+    # 'sslserver', # disable this for deployment
 )
 
 
@@ -102,11 +103,11 @@ REST_FRAMEWORK = {
 # https://azure.microsoft.com/en-us/documentation/articles/web-sites-configure-ssl-certificat/#bkmk_getcert
 # https://azure.microsoft.com/en-us/documentation/articles/web-sites-configure-ssl-certificate/
 
-# SECURE_SSL_REDIRECT=True
-# SESSION_COOKIE_SECURE=True
-# CSRF_COOKIE_SECURE=True
-# SESSION_EXPIRE_AT_BROWSER_CLOSE=True
-# os.environ['HTTPS'] = "on"
+SECURE_SSL_REDIRECT=True
+SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
+SESSION_EXPIRE_AT_BROWSER_CLOSE=True
+os.environ['HTTPS'] = "on"
 
 
 

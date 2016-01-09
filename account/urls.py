@@ -1,7 +1,7 @@
 
 
 from django.conf.urls import patterns, url
-from func import *
+from api_account import *
 
 
 urlpatterns = patterns('',

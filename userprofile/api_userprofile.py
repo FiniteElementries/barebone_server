@@ -4,10 +4,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 import json
 import ast
+import sys
 
 from userprofile.models import UserProfile
-import account.func
+import account.api_account
 from helper.auth import server_auth
+from helper.http_handler import package_handle
 
 
 @csrf_exempt
@@ -26,12 +28,12 @@ def get_userprofile_detail(request):
     try:
         target_username=request.POST['target_username']
     except KeyError:
-        account.func.error_response("provide target_username")
+        account.api_account.error_response("provide target_username")
 
     try:
         target_userprofile=UserProfile.objects.get(user__username=target_username)
     except UserProfile.DoesNotExist:
-        account.func.error_response("target_username does not exist")
+        account.api_account.error_response("target_username does not exist")
 
     package=target_userprofile.get_userprofile_info(my_profile)
 
@@ -42,7 +44,7 @@ def get_userprofile_detail(request):
     for key, value in package.iteritems():
         response['package'][key]=value
 
-    return HttpResponse(json.dumps(response))
+    return package_handle(response)
 
 
 @csrf_exempt
@@ -60,12 +62,12 @@ def friend_action(request):
         action=request.POST['action']
         target_username=request.POST['target_username']
     except KeyError:
-        return account.func.error_response("user POST method to include 'action' and 'target_username'")
+        return account.api_account.error_response("user POST method to include 'action' and 'target_username'")
 
     try:
         target_userprofile=UserProfile.objects.get(user__username=target_username)
     except User.DoesNotExist:
-        return account.func.error_response("target username does not exist")
+        return account.api_account.error_response("target username does not exist")
 
     response=dict()
 
@@ -82,7 +84,7 @@ def friend_action(request):
     response['success']=True
     response['message']="success"
 
-    return HttpResponse(json.dumps(response))
+    return package_handle(response)
 
 
 @csrf_exempt
@@ -105,7 +107,7 @@ def get_friend_list(request):
 
     response['package']=package
 
-    return HttpResponse(json.dumps(response))
+    return package_handle(response)
 
 
 @csrf_exempt
@@ -124,5 +126,5 @@ def change_userprofile_info(request):
     response['success']=True
     response['message']="success"
 
-    return HttpResponse(json.dumps(response))
+    return package_handle(response)
 

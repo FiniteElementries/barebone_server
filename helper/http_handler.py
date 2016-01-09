@@ -15,3 +15,7 @@ def error_response(error, response=None):
 
 def loadJson(bytes):
     return json.loads(bytes.decode('UTF-8'))
+
+
+def package_handle(package):
+    return HttpResponse(json.dumps(package, default=lambda x: None))
