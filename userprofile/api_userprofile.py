@@ -1,6 +1,5 @@
 
 from django.contrib.auth.models import User
-from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 import json
 import ast
@@ -8,17 +7,15 @@ import sys
 
 from userprofile.models import UserProfile
 import account.api_account
-from helper.auth import server_auth
 from helper.http_handler import package_handle
 
 
-@csrf_exempt
-@server_auth
 def get_userprofile_detail(request):
     """
     :param
     :return:
     """
+
     response=dict()
     response['success'] = False
 
@@ -47,8 +44,6 @@ def get_userprofile_detail(request):
     return package_handle(response)
 
 
-@csrf_exempt
-@server_auth
 def friend_action(request):
     """
     POST method
@@ -87,8 +82,6 @@ def friend_action(request):
     return package_handle(response)
 
 
-@csrf_exempt
-@server_auth
 def get_friend_list(request):
     """
 
@@ -110,8 +103,6 @@ def get_friend_list(request):
     return package_handle(response)
 
 
-@csrf_exempt
-@server_auth
 def change_userprofile_info(request):
 
     profile=request.user.profile

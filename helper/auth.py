@@ -13,6 +13,7 @@ def server_auth(original_function):
     :return:
     """
     def wrapper(request):
+        return original_function(request)
         username=u""
         token=u""
         try:

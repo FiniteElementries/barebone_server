@@ -5,8 +5,8 @@ import requests
 
 import time
 
-client="http://192.168.0.10:8000/api"
-# client="http://127.0.0.1:8000/api"
+# client="http://192.168.0.10:8000/api"
+client="http://127.0.0.1:8000/api"
 
 def loadJson(bytes):
     return json.loads(bytes.decode('UTF-8'))

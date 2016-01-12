@@ -13,10 +13,8 @@ import sys
 
 
 # todo test profile picture in UserProfile model
-# todo implement yelp access
 
 
-@csrf_exempt
 def create_account(request):
     """
     :param request: POST method
@@ -56,7 +54,6 @@ def create_account(request):
     return package_handle(response)
 
 
-@csrf_exempt
 def account_login(request):
     """
 
@@ -67,8 +64,6 @@ def account_login(request):
 
     username = request.POST['username']
     password = request.POST['password']
-
-
 
     user=authenticate(username=username, password=password)
 
@@ -104,8 +99,6 @@ def account_login(request):
     return package_handle(response)
 
 
-@csrf_exempt
-@server_auth
 def account_logout(request):
     """
     log user out, reset access token
@@ -131,8 +124,6 @@ def account_logout(request):
     return package_handle(response)
 
 
-@csrf_exempt
-@server_auth
 def change_password(request):
     """
     change user account password
@@ -160,8 +151,6 @@ def change_password(request):
         return package_handle(response)
 
 # todo need to be tested
-@csrf_exempt
-@server_auth
 def delete_account(request):
     """
     delete user account and its related profile
